@@ -1,0 +1,153 @@
+scenario_name: "Cuban Missile Crisis"
+description: >
+  Historical baseline model of the U.S. Nuclear Command and Control (NC2)
+  structure during the October 1962 Cuban Missile Crisis. This scenario
+  excludes AI/ML automation and represents the early-warning system as it
+  existed at the time: BMEWS and Falling Leaves radars, no operational
+  satellite missile-warning capability, and manual information flow
+  between command centers.
+
+# -----------------------------------------------------------
+# Simulation control
+# -----------------------------------------------------------
+simulation:
+  start_date: 1962-07-01 00:00:00
+  end_date: 1962-11-15 00:00:00
+  timestep_minutes: 20
+  iterations: 100        # number of Monte Carlo runs
+
+# -----------------------------------------------------------
+# Environment & adversary configuration
+# -----------------------------------------------------------
+environment:
+  adversary: "USSR"
+  tension_level: 2              # 1=Low, 2=Crisis, 3=War Imminent
+  adversary_missile_activity:
+    icbm_launch_prob_per_day: 0.00005
+    slbm_launch_prob_per_day: 0.00000  # USSR had no operational SLBMs in 1962
+  satellite_population: 400     # total tracked objects (sats + debris)
+  satellite_misclassification_prob: 0.002  # chance radar misreads satellite
+
+# -----------------------------------------------------------
+# U.S. early-warning network (1962 baseline)
+# -----------------------------------------------------------
+sensors:
+  # Northern long-range radars (BMEWS)
+  radars:
+    - name: "Thule_BMEWS"
+      type: "BMEWS"
+      latitude: 76.5
+      longitude: -68.7
+      operational: true
+      coverage_km: 4800
+      detection_accuracy: 0.95
+      false_alarm_rate: 0.0002
+      orientation: "north"
+      activation_date: 1960-10-01
+    - name: "Clear_BMEWS"
+      type: "BMEWS"
+      latitude: 64.3
+      longitude: -149.2
+      operational: true
+      coverage_km: 4800
+      detection_accuracy: 0.93
+      false_alarm_rate: 0.0002
+      orientation: "north"
+      activation_date: 1961-01-01
+
+  # South-facing contingency network "Falling Leaves"
+  south_radars:
+    - name: "Moorestown_FPS49"
+      latitude: 39.96
+      longitude: -74.95
+      operational: true
+      activation_date: 1962-10-24
+      deactivation_date: 1962-11-10
+      coverage_km: 2400
+      detection_accuracy: 0.75
+      false_alarm_rate: 0.001
+      orientation: "south"
+    - name: "Laredo_FPS78"
+      latitude: 27.52
+      longitude: -99.46
+      operational: true
+      activation_date: 1962-10-26
+      deactivation_date: 1962-11-10
+      coverage_km: 2400
+      detection_accuracy: 0.70
+      false_alarm_rate: 0.001
+      orientation: "south"
+    - name: "Thomasville_FPS35"
+      latitude: 31.9
+      longitude: -83.8
+      operational: true
+      activation_date: 1962-10-30
+      deactivation_date: 1962-11-10
+      coverage_km: 2400
+      detection_accuracy: 0.68
+      false_alarm_rate: 0.0015
+      orientation: "south"
+
+  # Space-based early warning (experimental)
+  satellites:
+    - name: "MIDAS_3"
+      operational: false
+      launch_date: 1961-07-12
+      notes: "Experimental IR payload; telemetry issues, short on-orbit life."
+    - name: "MIDAS_4"
+      operational: false
+      launch_date: 1961-10-21
+      notes: "No confirmed launch detection capability."
+    - name: "MIDAS_5"
+      operational: false
+      launch_date: 1962-04-09
+      notes: "R&D platform; non-operational during crisis."
+
+# -----------------------------------------------------------
+# Command and control structure
+# -----------------------------------------------------------
+command_centers:
+  - name: "NORAD"
+    location: "Cheyenne Mountain (temporary aboveground facility in 1962)"
+    receives_from: ["Thule_BMEWS", "Clear_BMEWS", "FallingLeaves"]
+    forwards_to: ["NMCC", "STRATCOM"]
+    decision_delay_minutes: 15
+  - name: "STRATCOM"
+    location: "Offutt AFB, Nebraska"
+    receives_from: ["NORAD"]
+    forwards_to: ["NMCC"]
+    decision_delay_minutes: 30
+  - name: "NMCC"
+    location: "Pentagon, Washington D.C."
+    receives_from: ["NORAD", "STRATCOM"]
+    forwards_to: ["President"]
+    decision_delay_minutes: 45
+  - name: "President"
+    location: "White House Situation Room"
+    receives_from: ["NMCC"]
+    trust_level_norad: 0.8
+    trust_level_stratcom: 0.85
+    decision_threshold_confidence: 0.95
+
+# -----------------------------------------------------------
+# Procedural parameters
+# -----------------------------------------------------------
+procedures:
+  missile_display_conference_delay: 15    # minutes between detection & first review
+  threat_assessment_conference_delay: 30
+  attack_conference_delay: 60
+  manual_confirmation_required: true
+  dual_radar_confirmation_required: true
+  dual_phenomenology_required: false      # no operational IR satellites in 1962
+
+# -----------------------------------------------------------
+# Output and performance metrics
+# -----------------------------------------------------------
+outputs:
+  record_variables:
+    - "missile_detections"
+    - "false_alarms"
+    - "decision_time_minutes"
+    - "final_assessment_confidence"
+    - "presidential_decision"
+
