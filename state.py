@@ -1,10 +1,21 @@
-# state.py
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 @dataclass
-class SensorState:
+class RadarState:
+    name: str
+    type: str
+    operational: bool
+    detection_accuracy: float
+    false_alarm_rate: float
+    orientation: str
+    last_detection_time: datetime = None
+    current_status: str = "idle"
+    confidence: float = 0.0
+
+@dataclass
+class SatelliteState:
     name: str
     type: str
     operational: bool
@@ -24,7 +35,7 @@ class CommandCenterState:
 
 @dataclass
 class EnvironmentState:
-    tension_level: int
+    DEFCON_level: int
     adversary: str
     icbm_launch_prob_per_day: float
     slbm_launch_prob_per_day: float
@@ -42,8 +53,10 @@ class State:
     environment: EnvironmentState
 
     # Dynamic entities
-    sensors: Dict[str, SensorState] = field(default_factory=dict)
+    radars: Dict[str, RadarState] = field(default_factory=dict)
+    satellites: Dict[str, SatelliteState] = field(default_factory=dict)
     command_centers: Dict[str, CommandCenterState] = field(default_factory=dict)
+    events: Dict[str, datetime] = field(default_factory=dict)
 
     # Simulation metrics
     detections: List[Dict[str, Any]] = field(default_factory=list)

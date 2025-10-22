@@ -13,15 +13,14 @@ description: >
 simulation:
   start_date: 1962-07-01 00:00:00
   end_date: 1962-11-15 00:00:00
-  timestep_minutes: 20
-  iterations: 100        # number of Monte Carlo runs
+  timestep_minutes: 20  # ~20 min from USSR ICBM launch detection to impact
 
 # -----------------------------------------------------------
 # Environment & adversary configuration
 # -----------------------------------------------------------
 environment:
   adversary: "USSR"
-  tension_level: 2              # 1=Low, 2=Crisis, 3=War Imminent
+  DEFCON_level: 5
   adversary_missile_activity:
     icbm_launch_prob_per_day: 0.00005
     slbm_launch_prob_per_day: 0.00000  # USSR had no operational SLBMs in 1962
@@ -32,19 +31,17 @@ environment:
 # U.S. early-warning network (1962 baseline)
 # -----------------------------------------------------------
 sensors:
-  # Northern long-range radars (BMEWS)
   radars:
-    - name: "Thule_BMEWS"
+    # Northern long-range radars (BMEWS)
+    - name: "Thule"
       type: "BMEWS"
       latitude: 76.5
-      longitude: -68.7
+      longitude: -68.3
       operational: true
-      coverage_km: 4800
       detection_accuracy: 0.95
       false_alarm_rate: 0.0002
       orientation: "north"
-      activation_date: 1960-10-01
-    - name: "Clear_BMEWS"
+    - name: "Clear"
       type: "BMEWS"
       latitude: 64.3
       longitude: -149.2
@@ -53,37 +50,29 @@ sensors:
       detection_accuracy: 0.93
       false_alarm_rate: 0.0002
       orientation: "north"
-      activation_date: 1961-01-01
-
-  # South-facing contingency network "Falling Leaves"
-  south_radars:
-    - name: "Moorestown_FPS49"
+    # South-facing contingency network "Falling Leaves"
+    - name: "Moorestown"
+      type: "contingency"
       latitude: 39.96
       longitude: -74.95
-      operational: true
-      activation_date: 1962-10-24
-      deactivation_date: 1962-11-10
-      coverage_km: 2400
+      operational: false
       detection_accuracy: 0.75
       false_alarm_rate: 0.001
       orientation: "south"
-    - name: "Laredo_FPS78"
-      latitude: 27.52
-      longitude: -99.46
-      operational: true
-      activation_date: 1962-10-26
-      deactivation_date: 1962-11-10
+    - name: "Laredo"
+      type: "contingency"
+      latitude: 27.6
+      longitude: -99.4
+      operational: false
       coverage_km: 2400
       detection_accuracy: 0.70
       false_alarm_rate: 0.001
       orientation: "south"
-    - name: "Thomasville_FPS35"
+    - name: "Thomasville"
+      type: "contingency"
       latitude: 31.9
-      longitude: -83.8
-      operational: true
-      activation_date: 1962-10-30
-      deactivation_date: 1962-11-10
-      coverage_km: 2400
+      longitude: -87.7
+      operational: false
       detection_accuracy: 0.68
       false_alarm_rate: 0.0015
       orientation: "south"

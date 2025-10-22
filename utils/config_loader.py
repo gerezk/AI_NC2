@@ -1,7 +1,6 @@
-# utils/config_loader.py
 import yaml
 from datetime import datetime, timedelta
-from state import State, SensorState, CommandCenterState, EnvironmentState
+from state import State, RadarState, SatelliteState, CommandCenterState, EnvironmentState
 
 def load_state_from_config(config_path: str) -> State:
     with open(config_path, "r") as f:
@@ -12,31 +11,35 @@ def load_state_from_config(config_path: str) -> State:
 
     # --- Create EnvironmentState ---
     environment = EnvironmentState(
-        tension_level=env_cfg["tension_level"],
         adversary=env_cfg["adversary"],
+        DEFCON_level=env_cfg["DEFCON_level"],
         icbm_launch_prob_per_day=env_cfg["adversary_missile_activity"]["icbm_launch_prob_per_day"],
         slbm_launch_prob_per_day=env_cfg["adversary_missile_activity"]["slbm_launch_prob_per_day"],
         satellite_population=env_cfg["satellite_population"],
         satellite_misclassification_prob=env_cfg["satellite_misclassification_prob"],
     )
 
-    # --- Create SensorStates ---
-    sensors = {}
+    # --- Create RadarStates ---
+    radars = {}
     for radar_cfg in cfg["sensors"]["radars"]:
-        sensors[radar_cfg["name"]] = SensorState(
+        radars[radar_cfg["name"]] = RadarState(
             name=radar_cfg["name"],
             type=radar_cfg["type"],
             operational=radar_cfg["operational"],
             detection_accuracy=radar_cfg["detection_accuracy"],
-            false_alarm_rate=radar_cfg["false_alarm_rate"]
+            false_alarm_rate=radar_cfg["false_alarm_rate"],
+            orientation=radar_cfg["orientation"]
         )
-    for radar_cfg in cfg["sensors"]["south_radars"]:
-        sensors[radar_cfg["name"]] = SensorState(
-            name=radar_cfg["name"],
-            type="FPS",
-            operational=radar_cfg["operational"],
-            detection_accuracy=radar_cfg["detection_accuracy"],
-            false_alarm_rate=radar_cfg["false_alarm_rate"]
+
+    # --- Create SatelliteStates
+    satellites = {}
+    for satellite_cfg in cfg["sensors"]["satellites"]:
+        satellites[satellite_cfg["name"]] = SatelliteState(
+            name=satellite_cfg["name"],
+            type=satellite_cfg["type"],
+            operational=satellite_cfg["operational"],
+            detection_accuracy=satellite_cfg["detection_accuracy"],
+            false_alarm_rate=satellite_cfg["false_alarm_rate"]
         )
 
     # --- Command Centers ---
@@ -53,7 +56,8 @@ def load_state_from_config(config_path: str) -> State:
         timestep=timedelta(minutes=sim_cfg["timestep_minutes"]),
         end_time=datetime.fromisoformat(sim_cfg["end_date"]),
         environment=environment,
-        sensors=sensors,
+        radars=radars,
+        satellites=satellites,
         command_centers=command_centers,
     )
 
